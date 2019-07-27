@@ -60,15 +60,18 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   float tenuse = sqrt(px * px + py * py);
   VectorXd z_pred = VectorXd(3);
   z_pred << tenuse, atan2(py, px), (px * vx + py * vy) / tenuse;
-  while(z_pred[1] < -PI || z_pred[1] > PI){
-    if(z_pred[1] < -PI){
-      z_pred[1] += 2 * PI;
+  VectorXd y = z - z_pred;
+
+  //normalize the angle in y in range [-pi, pi]
+  while(y[1] < -PI || y[1] > PI){
+    if(y[1] < -PI){
+      y[1] += 2 * PI;
     }
     else{
-      z_pred[1] -= 2 * PI;
+      y[1] -= 2 * PI;
     }
   }
-  VectorXd y = z - z_pred;
+
   MatrixXd Ht = H_.transpose();
   MatrixXd S = H_ * P_ * Ht + R_;
   MatrixXd Si = S.inverse();
